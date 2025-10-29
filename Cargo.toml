@@ -2,6 +2,8 @@
 name = "chorus"
 version = "0.1.0-alpha"
 edition = "2024"
+license-file = "LICENSE"
+repository = "https://github.com/mikesk8r/chorus"
 
 [dependencies]
 eframe = "0.33.0"
