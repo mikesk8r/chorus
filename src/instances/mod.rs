@@ -3,6 +3,9 @@
 use std::cell::RefCell;
 use std::rc::Rc;
 
+mod new;
+pub use new::*;
+
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Instance {
     pub name: String,
@@ -44,8 +47,7 @@ pub fn get() -> InstanceGroup {
     #[cfg(target_os = "windows")]
     let instances = std::fs::read_dir(env!("LOCALAPPDATA").to_owned() + "\\chorus\\instances");
     #[cfg(all(unix, not(target_os = "macos")))]
-    let instances =
-        std::fs::read_dir(env!("HOME").to_owned() + "/.local/share/chorus/instances");
+    let instances = std::fs::read_dir(env!("HOME").to_owned() + "/.local/share/chorus/instances");
 
     if instances.is_ok() {
         group = find(instances.unwrap());

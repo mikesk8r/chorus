@@ -11,7 +11,7 @@ mod settings;
 use settings::*;
 
 /// Begins drawing the GUI in a loop.
-pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe::Error> {
+pub fn start(_settings: Settings, mut instances: InstanceGroup) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_inner_size([640.0, 480.0])
@@ -26,6 +26,8 @@ pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe
         ..Default::default()
     };
 
+    let mut new_instance_shown = false;
+    let mut new_instance = Instance::default();
     let mut settings_shown = false;
     let mut about_shown = false;
 
@@ -37,6 +39,10 @@ pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe
     eframe::run_simple_native("Chorus", options, move |ctx, _frame| {
         egui::TopBottomPanel::top("topbar").show(ctx, |ui| {
             ui.horizontal(|ui| {
+                if ui.button("New Instance").clicked() {
+                    new_instance_shown = true;
+                }
+                ui.separator();
                 if ui.button("Settings").clicked() {
                     settings_shown = true;
                 }
@@ -52,6 +58,26 @@ pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe
             let selected = selected_instance.borrow();
             ui.heading(selected.name.clone());
         });
+        let mut cloned_new_instance = new_instance.clone();
+        if new_instance_shown {
+            egui::Modal::new("new_instance".into()).show(ctx, |ui| {
+                ui.text_edit_singleline(&mut cloned_new_instance.name);
+                ui.horizontal(|ui| {
+                    ui.allocate_space(egui::Vec2 { x: 200.0, y: 0.0 });
+                    if ui.button("Create").clicked() {
+                        if crate::instances::new_instance(&cloned_new_instance) {
+                            instances.instances.push(cloned_new_instance.clone());
+                            new_instance_shown = false;
+                        }
+                    }
+                    if ui.button("Cancel").clicked() {
+                        new_instance = Instance::default();
+                        new_instance_shown = false;
+                    }
+                });
+            });
+        }
+        new_instance = cloned_new_instance;
         if settings_shown {
             (settings_shown, settings_menu_state) =
                 show_settings(ctx, settings_shown, settings_menu_state);
