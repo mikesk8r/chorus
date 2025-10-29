@@ -1,6 +1,11 @@
+use std::cell::RefCell;
+use std::rc::Rc;
 use std::sync::Arc;
 
-use crate::{instances::InstanceGroup, settings::Settings};
+use crate::{
+    instances::{Instance, InstanceGroup},
+    settings::Settings,
+};
 
 mod settings;
 use settings::*;
@@ -23,6 +28,8 @@ pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe
     let mut settings_shown = false;
     let mut about_shown = false;
 
+    let selected_instance: Rc<RefCell<Instance>> = Rc::new(RefCell::new(Instance::default()));
+
     let mut settings_menu_state = SettingsMenus::General;
 
     // TODO: dynamically allocate space for Modals' closing buttons
@@ -38,13 +45,11 @@ pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe
             });
         });
         egui::SidePanel::left("instance_list").show(ctx, |ui| {
-            instances.draw_recursive(ui);
+            instances.draw_recursive(ui, Rc::clone(&selected_instance));
         });
         egui::CentralPanel::default().show(ctx, |ui| {
-            ui.heading("todo");
-            // TODO!
-            // the instance selected in the left sidebar will show up here
-            // buttons to launch, edit, etc.
+            let selected = selected_instance.borrow();
+            ui.heading(selected.name.clone());
         });
         if settings_shown {
             (settings_shown, settings_menu_state) =
