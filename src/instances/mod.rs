@@ -16,6 +16,7 @@ pub struct InstanceGroup {
 }
 
 impl InstanceGroup {
+    /// Draws this instance group, the instance groups inside it (and their groups and instances), and its own instances.
     pub fn draw_recursive(&self, ui: &mut egui::Ui, selected_instance: Rc<RefCell<Instance>>) {
         for group in &self.instance_groups {
             egui::CollapsingHeader::new(group.name.clone()).show(ui, |ui| {
@@ -24,18 +25,19 @@ impl InstanceGroup {
         }
         for instance in &self.instances {
             let clicked = {
-                let selected = selected_instance.borrow(); // borrow only inside this block
+                let selected = selected_instance.borrow();
                 ui.selectable_label(selected.name == instance.name, instance.name.clone())
                     .clicked()
             };
 
             if clicked {
-                *selected_instance.borrow_mut() = instance.clone(); // now safe, immutable borrow ended ✅
+                *selected_instance.borrow_mut() = instance.clone();
             }
         }
     }
 }
 
+/// Returns the full list of instances.
 pub fn get() -> InstanceGroup {
     let mut group = InstanceGroup::default();
 
@@ -43,7 +45,7 @@ pub fn get() -> InstanceGroup {
     let instances = std::fs::read_dir(env!("LOCALAPPDATA").to_owned() + "\\chorus\\instances");
     #[cfg(all(unix, not(target_os = "macos")))]
     let instances =
-        std::fs::read_to_string(env!("HOME").to_owned() + "/.local/share/chorus/instances");
+        std::fs::read_dir(env!("HOME").to_owned() + "/.local/share/chorus/instances");
 
     if instances.is_ok() {
         group = find(instances.unwrap());
@@ -52,7 +54,8 @@ pub fn get() -> InstanceGroup {
     group
 }
 
-pub fn find(dir: std::fs::ReadDir) -> InstanceGroup {
+/// Returns a list of instances in a folder.
+fn find(dir: std::fs::ReadDir) -> InstanceGroup {
     let mut group = InstanceGroup::default();
 
     for item in dir {

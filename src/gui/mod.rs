@@ -10,6 +10,7 @@ use crate::{
 mod settings;
 use settings::*;
 
+/// Begins drawing the GUI in a loop.
 pub fn start(_settings: Settings, instances: InstanceGroup) -> Result<(), eframe::Error> {
     let options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
