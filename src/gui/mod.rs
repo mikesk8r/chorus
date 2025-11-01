@@ -67,6 +67,7 @@ pub fn start(_settings: Settings, mut instances: InstanceGroup) -> Result<(), ef
                     if ui.button("Create").clicked() {
                         if crate::instances::new_instance(&cloned_new_instance) {
                             instances.instances.push(cloned_new_instance.clone());
+                            *selected_instance.borrow_mut() = cloned_new_instance.clone();
                             new_instance_shown = false;
                         }
                     }

@@ -1,7 +1,7 @@
 use crate::instances::Instance;
 
 /// Creates a new instance in the filesytem.
-/// 
+///
 /// Returns `true` if the instance was successfully created.
 pub fn new_instance(instance: &Instance) -> bool {
     #[cfg(target_os = "windows")]

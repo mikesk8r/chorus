@@ -4,11 +4,13 @@ use std::cell::RefCell;
 use std::rc::Rc;
 
 mod new;
+use base64ct::{Base64, Encoding};
 pub use new::*;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct Instance {
     pub name: String,
+    pub id: String,
 }
 
 #[derive(Default)]
@@ -29,7 +31,7 @@ impl InstanceGroup {
         for instance in &self.instances {
             let clicked = {
                 let selected = selected_instance.borrow();
-                ui.selectable_label(selected.name == instance.name, instance.name.clone())
+                ui.selectable_label(selected.id == instance.id, instance.name.clone())
                     .clicked()
             };
 
@@ -90,7 +92,14 @@ fn find(dir: std::fs::ReadDir) -> InstanceGroup {
                     .expect("bad instance.toml");
 
                     if let Some(name) = parsed.get("name") {
-                        instance.name = name.to_string();
+                        let name = name.to_string();
+                        let name = name.as_bytes();
+                        let name = &name[1..name.len() - 1];
+                        let mut id = name.to_vec();
+                        id.append(&mut item.path().as_os_str().as_encoded_bytes().to_vec());
+                        instance.id = Base64::encode_string(&id.as_slice());
+                        let name = String::from_utf8(name.to_vec()).unwrap();
+                        instance.name = name;
                     }
                 }
             }
